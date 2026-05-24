@@ -4,6 +4,18 @@
   functions = "netlify/functions"
 
 [[redirects]]
+  from = "/about"
+  to = "https://portfolio1-jade-ten.vercel.app"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/about/*"
+  to = "https://portfolio1-jade-ten.vercel.app/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

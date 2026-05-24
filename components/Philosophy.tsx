@@ -209,11 +209,11 @@ const Philosophy: React.FC<PhilosophyProps> = ({ mode, onOpenKrishna }) => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={REVEAL_VIEWPORT}
                     transition={{ delay: 0.2, duration: 0.8, ease: EASE_SMOOTH }}
-                    className="mt-14 text-center"
+                    className="mt-14 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12"
                 >
-                    <div className="inline-block">
+                    <div className="flex flex-col items-center max-w-sm text-center">
                         <p
-                            className={`mb-4 text-sm font-tech ${
+                            className={`mb-4 text-sm font-tech min-h-[40px] flex items-center justify-center ${
                                 isCalm ? 'text-slate-700' : 'text-gray-500'
                             }`}
                         >
@@ -235,6 +235,49 @@ const Philosophy: React.FC<PhilosophyProps> = ({ mode, onOpenKrishna }) => {
                             <span className="relative z-10">Seek Divine Guidance</span>
                             <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
                         </motion.button>
+                    </div>
+
+                    <div className="flex flex-col items-center max-w-sm text-center">
+                        <p
+                            className={`mb-4 text-sm font-tech min-h-[40px] flex items-center justify-center ${
+                                isCalm ? 'text-slate-700' : 'text-gray-500'
+                            }`}
+                        >
+                            {isCalm
+                                ? 'Unveil the engineering projects, logic, and systems built in the light.'
+                                : 'Cross the boundary. Witness the core architecture of my creations.'}
+                        </p>
+                        <a href="/about" className="inline-block">
+                            <motion.button
+                                whileHover={{ scale: 1.03, y: -2 }}
+                                whileTap={{ scale: 0.97 }}
+                                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                                className={`group relative overflow-hidden rounded-full border px-7 py-3 font-cinematic text-sm tracking-[0.2em] transition-[box-shadow,border-color,background] duration-500 ${
+                                    isCalm
+                                        ? 'border-emerald-400/50 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_14px_38px_rgba(16,185,129,0.2)] hover:border-emerald-500 hover:shadow-[0_20px_48px_rgba(16,185,129,0.3)]'
+                                        : 'border-red-500/40 bg-gradient-to-r from-slate-950 via-red-950 to-purple-950 text-red-200 shadow-[0_14px_38px_rgba(239,68,68,0.15)] hover:border-red-400/70 hover:text-white hover:shadow-[0_20px_48px_rgba(239,68,68,0.35)]'
+                                }`}
+                            >
+                                <span className="relative z-10 flex items-center gap-2">
+                                    {isCalm ? (
+                                        <>
+                                            <span>Domain Expansion</span>
+                                            <span className="text-[10px] opacity-75 font-mono">|</span>
+                                            <span className="font-bold">Engineer Realm</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="tracking-widest animate-pulse">DOMAIN EXPANSION:</span>
+                                            <span className="font-bold text-white drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]">ENGINEER HUB</span>
+                                        </>
+                                    )}
+                                </span>
+                                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-red-400/20 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
+                                <span className={`absolute inset-0 rounded-full border opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${
+                                    isCalm ? 'border-emerald-400' : 'border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                                }`} />
+                            </motion.button>
+                        </a>
                     </div>
                 </motion.div>
 
