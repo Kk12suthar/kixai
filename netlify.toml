@@ -5,8 +5,8 @@
 
 [[redirects]]
   from = "/about"
-  to = "https://portfolio1-jade-ten.vercel.app"
-  status = 200
+  to = "/about/"
+  status = 301
   force = true
 
 [[redirects]]
