@@ -12,6 +12,7 @@ const navItems = [
     { name: 'Side Quest', href: '#sidequests' },
     { name: 'Ask KiX', href: '#chatbot' },
     { name: 'Way of Life', href: '#philosophy' },
+    { name: 'Engineer Realm', href: '/about' },
 ];
 
 const logoStages = ['full', 'initials', 'kiks', 'kix'] as const;
@@ -416,28 +417,31 @@ const Header: React.FC<HeaderProps> = ({ mode, onChangeMode }) => {
                     </motion.a>
 
                     <nav className="hidden items-center gap-1 md:flex">
-                        {navItems.map((item, index) => (
-                            <motion.a
-                                key={item.name}
-                                href={item.href}
-                                onClick={(e) => scrollToSection(e, item.href)}
-                                initial={{ opacity: 0, y: -16 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.7 + index * 0.1, ease: EASE_SMOOTH }}
-                                className={`group relative px-4 py-2 text-sm font-cinematic font-semibold transition-colors ${
-                                    isCalm ? 'text-slate-700 hover:text-slate-900' : 'text-gray-400 hover:text-white'
-                                }`}
-                            >
-                                <span className="relative z-10">{item.name}</span>
-                                <span
-                                    className={`absolute inset-0 border border-transparent transition-all duration-300 ${
-                                        isCalm
-                                            ? 'group-hover:border-slate-300/70 group-hover:bg-white/60'
-                                            : 'group-hover:border-nolan-aura/30 group-hover:bg-nolan-aura/10'
+                        {navItems.map((item, index) => {
+                            const isExternal = item.href.startsWith('/');
+                            return (
+                                <motion.a
+                                    key={item.name}
+                                    href={item.href}
+                                    onClick={isExternal ? undefined : (e) => scrollToSection(e, item.href)}
+                                    initial={{ opacity: 0, y: -16 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.8, delay: 0.7 + index * 0.1, ease: EASE_SMOOTH }}
+                                    className={`group relative px-4 py-2 text-sm font-cinematic font-semibold transition-colors ${
+                                        isCalm ? 'text-slate-700 hover:text-slate-900' : 'text-gray-400 hover:text-white'
                                     }`}
-                                />
-                            </motion.a>
-                        ))}
+                                >
+                                    <span className="relative z-10">{item.name}</span>
+                                    <span
+                                        className={`absolute inset-0 border border-transparent transition-all duration-300 ${
+                                            isCalm
+                                                ? 'group-hover:border-slate-300/70 group-hover:bg-white/60'
+                                                : 'group-hover:border-nolan-aura/30 group-hover:bg-nolan-aura/10'
+                                        }`}
+                                    />
+                                </motion.a>
+                            );
+                        })}
 
                         <div
                             className={`ml-4 flex items-center gap-3 pl-4 ${
@@ -492,23 +496,26 @@ const Header: React.FC<HeaderProps> = ({ mode, onChangeMode }) => {
                         </div>
 
                         <nav className="flex flex-col gap-2">
-                            {navItems.map((item, index) => (
-                                <motion.a
-                                    key={item.name}
-                                    href={item.href}
-                                    onClick={(e) => scrollToSection(e, item.href)}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className={`border px-4 py-3 text-base font-cinematic font-semibold transition-all ${
-                                        isCalm
-                                            ? 'border-slate-300/60 text-slate-700 hover:border-slate-400 hover:bg-white'
-                                            : 'border-transparent text-gray-400 hover:border-nolan-aura/30 hover:bg-nolan-aura/10 hover:text-white'
-                                    }`}
-                                >
-                                    {item.name}
-                                </motion.a>
-                            ))}
+                            {navItems.map((item, index) => {
+                                const isExternal = item.href.startsWith('/');
+                                return (
+                                    <motion.a
+                                        key={item.name}
+                                        href={item.href}
+                                        onClick={isExternal ? undefined : (e) => scrollToSection(e, item.href)}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        className={`border px-4 py-3 text-base font-cinematic font-semibold transition-all ${
+                                            isCalm
+                                                ? 'border-slate-300/60 text-slate-700 hover:border-slate-400 hover:bg-white'
+                                                : 'border-transparent text-gray-400 hover:border-nolan-aura/30 hover:bg-nolan-aura/10 hover:text-white'
+                                        }`}
+                                    >
+                                        {item.name}
+                                    </motion.a>
+                                );
+                            })}
                         </nav>
                     </motion.div>
                 )}

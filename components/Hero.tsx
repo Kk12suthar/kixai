@@ -237,6 +237,17 @@ const Hero: React.FC<HeroProps> = ({ mode }) => {
                         <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.4em] text-white/85 sm:mt-6 sm:text-[11px]">
                             — Nicole Reed
                         </p>
+                        <div className="mt-8">
+                            <a href="/about" className="inline-block">
+                                <motion.button
+                                    whileHover={{ scale: 1.04, y: -2 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-9 py-4 font-cinematic text-sm tracking-[0.2em] font-semibold border border-white/90 bg-white text-slate-900 shadow-[0_12px_32px_rgba(255,255,255,0.15)] hover:bg-slate-100 transition-all duration-300 rounded-sm"
+                                >
+                                    ENGINEER REALM
+                                </motion.button>
+                            </a>
+                        </div>
                     </motion.div>
                 ) : (
                     /* ─── RAGE MODE: Quote bottom on mobile, right on desktop ─── */
@@ -250,6 +261,17 @@ const Hero: React.FC<HeroProps> = ({ mode }) => {
                             "If you gaze into the abyss for long, the abyss will gaze back to you."
                         </blockquote>
                         <div className="mt-5 h-px w-12 bg-red-500/70 md:ml-auto md:w-16" />
+                        <div className="mt-8">
+                            <a href="/about" className="inline-block">
+                                <motion.button
+                                    whileHover={{ scale: 1.04, y: -2 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-9 py-4 font-cinematic text-sm tracking-[0.2em] font-semibold border border-red-950/40 bg-[#07000b] text-gray-200 shadow-[0_12px_32px_rgba(0,0,0,0.8)] hover:border-red-500/35 hover:text-white hover:shadow-[0_16px_40px_rgba(239,68,68,0.15)] transition-all duration-300 rounded-sm"
+                                >
+                                    ENGINEER REALM
+                                </motion.button>
+                            </a>
+                        </div>
                     </motion.div>
                 )}
 
