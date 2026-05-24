@@ -1,0 +1,3 @@
+npm run build
+npx netlify-cli deploy --prod --dir=dist
+npx netlify-cli status

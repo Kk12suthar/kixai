@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+memori
+litellm
+google-generativeai
+python-dotenv

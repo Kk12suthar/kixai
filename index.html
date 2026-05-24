@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KiX | The Aura Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Space+Grotesk:wght@300;400;600&family=Syne:wght@400;700;800&display=swap"
+    rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        var storedMode = localStorage.getItem('kixai-emotional-mode');
+        document.documentElement.dataset.theme = storedMode === 'calm' ? 'calm' : 'rage';
+      } catch (error) {
+        document.documentElement.dataset.theme = 'rage';
+      }
+    })();
+  </script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            cinematic: ['Cinzel', 'serif'],
+            tech: ['Space Grotesk', 'sans-serif'],
+            art: ['Syne', 'sans-serif'],
+          },
+          colors: {
+            nolan: {
+              black: '#030005',
+              dark: '#0a0a0a',
+              gray: '#1a1a1a',
+              gold: '#ffd700',
+              blue: '#3b82f6',
+              aura: '#ef4444',
+              void: '#000000',
+              neon: '#f97316'
+            }
+          },
+          backgroundImage: {
+            'film-grain': "url('https://www.transparenttextures.com/patterns/stardust.png')",
+            'aura-gradient': "radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.15), transparent 70%)",
+            'grid-pattern': "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)"
+          },
+          animation: {
+            'spin-slow': 'spin 20s linear infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'glitch': 'glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite',
+            'scanline': 'scanline 8s linear infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            glitch: {
+              '0%': { transform: 'translate(0)' },
+              '20%': { transform: 'translate(-2px, 2px)' },
+              '40%': { transform: 'translate(-2px, -2px)' },
+              '60%': { transform: 'translate(2px, 2px)' },
+              '80%': { transform: 'translate(2px, -2px)' },
+              '100%': { transform: 'translate(0)' },
+            },
+            scanline: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(100%)' }
+            },
+            shake: {
+              '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+              '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+              '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+              '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="/index.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
