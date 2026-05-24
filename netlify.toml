@@ -5,13 +5,13 @@
 
 [[redirects]]
   from = "/about"
-  to = "/about/"
-  status = 301
+  to = "https://portfolio1-jade-ten.vercel.app/about"
+  status = 200
   force = true
 
 [[redirects]]
   from = "/about/*"
-  to = "https://portfolio1-jade-ten.vercel.app/:splat"
+  to = "https://portfolio1-jade-ten.vercel.app/about/:splat"
   status = 200
   force = true
 
