@@ -65,8 +65,9 @@ export const MirrorShatter: React.FC<MirrorShatterProps> = ({
     window.addEventListener('resize', resizeCanvas);
 
     // Crack generation logic
-    const x0 = impactX === 0 ? canvas.width / 2 : impactX;
-    const y0 = impactY === 0 ? canvas.height / 2 : impactY;
+    const x0 = (typeof impactX !== 'number' || isNaN(impactX) || impactX === 0) ? canvas.width / 2 : impactX;
+    const y0 = (typeof impactY !== 'number' || isNaN(impactY) || impactY === 0) ? canvas.height / 2 : impactY;
+    console.log("MirrorShatter: starting animation at impact center:", x0, y0);
 
     const branches: CrackBranch[] = [];
     const numBranches = 12 + Math.floor(Math.random() * 6); // 12 to 18 main cracks
@@ -351,6 +352,7 @@ export const MirrorShatter: React.FC<MirrorShatterProps> = ({
 
         // If shards are gone and transition fade has peaked, complete the process
         if (activeShards === 0 || timeElapsed > 1800) {
+          console.log(`MirrorShatter: animation phase transition to 'done' (time elapsed: ${timeElapsed}ms, active shards: ${activeShards})`);
           phase = 'done';
           onComplete();
         }

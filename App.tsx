@@ -36,15 +36,23 @@ const App: React.FC = () => {
   });
 
   const handleShatterTrigger = (clientX: number, clientY: number) => {
-    if (shatterState.isShattering) return;
+    console.log("handleShatterTrigger called with:", clientX, clientY);
+    if (shatterState.isShattering) {
+      console.log("Already shattering, ignoring trigger.");
+      return;
+    }
+    const x = (typeof clientX === 'number' && !isNaN(clientX)) ? clientX : window.innerWidth / 2;
+    const y = (typeof clientY === 'number' && !isNaN(clientY)) ? clientY : window.innerHeight / 2;
+    console.log("Setting shatter state to coordinates:", x, y);
     setShatterState({
       isShattering: true,
-      x: clientX,
-      y: clientY,
+      x,
+      y,
     });
   };
 
   const handleShatterComplete = () => {
+    console.log("handleShatterComplete called! Redirecting to https://aikishor.live/about");
     window.location.href = 'https://aikishor.live/about';
   };
 
