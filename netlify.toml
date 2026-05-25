@@ -5,14 +5,14 @@
 
 [[redirects]]
   from = "/about"
-  to = "https://portfolio1-jade-ten.vercel.app/about"
-  status = 200
+  to = "https://aikishor.live/about"
+  status = 302
   force = true
 
 [[redirects]]
   from = "/about/*"
-  to = "https://portfolio1-jade-ten.vercel.app/about/:splat"
-  status = 200
+  to = "https://aikishor.live/about/:splat"
+  status = 302
   force = true
 
 [[redirects]]

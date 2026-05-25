@@ -239,18 +239,15 @@ const Hero: React.FC<HeroProps> = ({ mode }) => {
                             — Nicole Reed
                         </p>
                         <div className="mt-6 sm:mt-8">
-                            <motion.a
-                                href="https://aikishor.live/about"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onShatterTrigger(e.clientX, e.clientY);
-                                }}
-                                whileHover={{ scale: 1.04, y: -2 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="inline-block px-5 py-2.5 sm:px-7 sm:py-3 font-cinematic text-xs sm:text-sm tracking-[0.15em] sm:tracking-[0.2em] font-semibold border border-white/90 bg-white text-slate-900 shadow-[0_8px_24px_rgba(255,255,255,0.1)] hover:bg-slate-100 transition-all duration-300 rounded-sm text-center"
-                            >
-                                ENGINEER REALM
-                            </motion.a>
+                            <a href="https://aikishor.live/about" className="inline-block">
+                                <motion.button
+                                    whileHover={{ scale: 1.04, y: -2 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-5 py-2.5 sm:px-7 sm:py-3 font-cinematic text-xs sm:text-sm tracking-[0.15em] sm:tracking-[0.2em] font-semibold border border-white/90 bg-white text-slate-900 shadow-[0_8px_24px_rgba(255,255,255,0.1)] hover:bg-slate-100 transition-all duration-300 rounded-sm"
+                                >
+                                    ENGINEER REALM
+                                </motion.button>
+                            </a>
                         </div>
                     </motion.div>
                 ) : (
@@ -266,18 +263,15 @@ const Hero: React.FC<HeroProps> = ({ mode }) => {
                         </blockquote>
                         <div className="mt-3 h-px w-10 bg-red-500/70 md:ml-auto md:w-16 sm:mt-5" />
                         <div className="mt-6 sm:mt-8">
-                            <motion.a
-                                href="https://aikishor.live/about"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onShatterTrigger(e.clientX, e.clientY);
-                                }}
-                                whileHover={{ scale: 1.04, y: -2 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="inline-block px-5 py-2.5 sm:px-7 sm:py-3 font-cinematic text-xs sm:text-sm tracking-[0.15em] sm:tracking-[0.2em] font-semibold border border-red-500/40 bg-black/60 backdrop-blur-sm text-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:border-red-500 hover:text-white hover:bg-red-950/30 hover:shadow-[0_12px_32px_rgba(239,68,68,0.25)] transition-all duration-300 rounded-sm text-center"
-                            >
-                                ENGINEER REALM
-                            </motion.a>
+                            <a href="https://aikishor.live/about" className="inline-block">
+                                <motion.button
+                                    whileHover={{ scale: 1.04, y: -2 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-5 py-2.5 sm:px-7 sm:py-3 font-cinematic text-xs sm:text-sm tracking-[0.15em] sm:tracking-[0.2em] font-semibold border border-red-500/40 bg-black/60 backdrop-blur-sm text-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:border-red-500 hover:text-white hover:bg-red-950/30 hover:shadow-[0_12px_32px_rgba(239,68,68,0.25)] transition-all duration-300 rounded-sm"
+                                >
+                                    ENGINEER REALM
+                                </motion.button>
+                            </a>
                         </div>
                     </motion.div>
                 )}
