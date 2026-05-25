@@ -8,6 +8,7 @@ import Philosophy from './components/Philosophy';
 import KrishnaAIPage from './components/KrishnaAIPage';
 import Footer from './components/Footer';
 import type { ThemeMode } from './types';
+import { MirrorShatter } from './components/MirrorShatter';
 
 const THEME_STORAGE_KEY = 'kixai-emotional-mode';
 
@@ -27,6 +28,25 @@ const App: React.FC = () => {
   const [showKrishnaAI, setShowKrishnaAI] = useState(false);
   const [mode, setMode] = useState<ThemeMode>(getInitialMode);
   const isCalm = mode === 'calm';
+
+  const [shatterState, setShatterState] = useState({
+    isShattering: false,
+    x: 0,
+    y: 0,
+  });
+
+  const handleShatterTrigger = (clientX: number, clientY: number) => {
+    if (shatterState.isShattering) return;
+    setShatterState({
+      isShattering: true,
+      x: clientX,
+      y: clientY,
+    });
+  };
+
+  const handleShatterComplete = () => {
+    window.location.href = '/about';
+  };
 
   useEffect(() => {
     const updateCursor = (e: MouseEvent) => {
@@ -70,8 +90,12 @@ const App: React.FC = () => {
   return (
     <>
       <main
-        className={`theme-shell theme-shell--${mode} min-h-screen w-full overflow-x-hidden ${
+        className={`theme-shell theme-shell--${mode} min-h-screen w-full overflow-x-hidden transition-all duration-[1200ms] ease-out ${
           isCalm ? 'selection:bg-white selection:text-slate-900' : 'selection:bg-nolan-gold selection:text-black'
+        } ${
+          shatterState.isShattering
+            ? 'scale-[0.96] filter blur-[8px] brightness-[0.2] pointer-events-none'
+            : ''
         }`}
       >
         {/* Cinematic Custom Cursor (Hidden on Touch) */}
@@ -97,8 +121,8 @@ const App: React.FC = () => {
           ></div>
         </div>
 
-        <Header mode={mode} onChangeMode={setMode} />
-        <Hero mode={mode} />
+        <Header mode={mode} onChangeMode={setMode} onShatterTrigger={handleShatterTrigger} />
+        <Hero mode={mode} onShatterTrigger={handleShatterTrigger} />
         <section id="sidequests">
           <SideQuests mode={mode} />
         </section>
@@ -117,6 +141,14 @@ const App: React.FC = () => {
           <KrishnaAIPage onClose={() => setShowKrishnaAI(false)} />
         )}
       </AnimatePresence>
+
+      <MirrorShatter
+        isShattering={shatterState.isShattering}
+        impactX={shatterState.x}
+        impactY={shatterState.y}
+        mode={mode}
+        onComplete={handleShatterComplete}
+      />
     </>
   );
 };

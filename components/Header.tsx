@@ -6,6 +6,7 @@ import type { ThemeMode } from '../types';
 interface HeaderProps {
     mode: ThemeMode;
     onChangeMode: (mode: ThemeMode) => void;
+    onShatterTrigger: (x: number, y: number) => void;
 }
 
 const navItems = [
@@ -423,7 +424,10 @@ const Header: React.FC<HeaderProps> = ({ mode, onChangeMode }) => {
                                 <motion.a
                                     key={item.name}
                                     href={item.href}
-                                    onClick={isExternal ? undefined : (e) => scrollToSection(e, item.href)}
+                                    onClick={isExternal ? (e) => {
+                                        e.preventDefault();
+                                        onShatterTrigger(e.clientX, e.clientY);
+                                    } : (e) => scrollToSection(e, item.href)}
                                     initial={{ opacity: 0, y: -16 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.8, delay: 0.7 + index * 0.1, ease: EASE_SMOOTH }}
@@ -502,7 +506,10 @@ const Header: React.FC<HeaderProps> = ({ mode, onChangeMode }) => {
                                     <motion.a
                                         key={item.name}
                                         href={item.href}
-                                        onClick={isExternal ? undefined : (e) => scrollToSection(e, item.href)}
+                                        onClick={isExternal ? (e) => {
+                                            e.preventDefault();
+                                            onShatterTrigger(e.clientX, e.clientY);
+                                        } : (e) => scrollToSection(e, item.href)}
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: index * 0.1 }}

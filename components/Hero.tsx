@@ -5,6 +5,7 @@ import type { ThemeMode } from '../types';
 
 interface HeroProps {
     mode: ThemeMode;
+    onShatterTrigger: (x: number, y: number) => void;
 }
 
 const useIsMobile = () => {
@@ -231,18 +232,21 @@ const Hero: React.FC<HeroProps> = ({ mode }) => {
                         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
                         className="w-full text-left md:max-w-[55%] lg:max-w-[48%]"
                     >
-                        <blockquote className="font-cinematic text-xl font-bold leading-[1.3] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)] sm:text-2xl md:text-3xl lg:text-4xl">
+                        <blockquote className="font-cinematic text-base font-bold leading-[1.3] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)] sm:text-xl md:text-2xl lg:text-3.5xl">
                             "Sometimes the bad things that happen in our lives put us directly on the path to the best things that will ever happen to us."
                         </blockquote>
-                        <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.4em] text-white/85 sm:mt-6 sm:text-[11px]">
+                        <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.4em] text-white/85 sm:mt-5 sm:text-[11px]">
                             — Nicole Reed
                         </p>
-                        <div className="mt-8">
-                            <a href="/about" className="inline-block">
+                        <div className="mt-6 sm:mt-8">
+                            <a href="/about" className="inline-block" onClick={(e) => {
+                                e.preventDefault();
+                                onShatterTrigger(e.clientX, e.clientY);
+                            }}>
                                 <motion.button
                                     whileHover={{ scale: 1.04, y: -2 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="px-9 py-4 font-cinematic text-sm tracking-[0.2em] font-semibold border border-white/90 bg-white text-slate-900 shadow-[0_12px_32px_rgba(255,255,255,0.15)] hover:bg-slate-100 transition-all duration-300 rounded-sm"
+                                    className="px-5 py-2.5 sm:px-7 sm:py-3 font-cinematic text-xs sm:text-sm tracking-[0.15em] sm:tracking-[0.2em] font-semibold border border-white/90 bg-white text-slate-900 shadow-[0_8px_24px_rgba(255,255,255,0.1)] hover:bg-slate-100 transition-all duration-300 rounded-sm"
                                 >
                                     ENGINEER REALM
                                 </motion.button>
@@ -257,16 +261,19 @@ const Hero: React.FC<HeroProps> = ({ mode }) => {
                         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
                         className="w-full text-left md:ml-auto md:max-w-[50%] md:text-right lg:max-w-[44%]"
                     >
-                        <blockquote className="font-cinematic text-xl font-bold italic leading-[1.25] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] sm:text-2xl md:text-3xl lg:text-4xl">
+                        <blockquote className="font-cinematic text-base font-bold italic leading-[1.25] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] sm:text-xl md:text-2xl lg:text-3.5xl">
                             "If you gaze into the abyss for long, the abyss will gaze back to you."
                         </blockquote>
-                        <div className="mt-5 h-px w-12 bg-red-500/70 md:ml-auto md:w-16" />
-                        <div className="mt-8">
-                            <a href="/about" className="inline-block">
+                        <div className="mt-3 h-px w-10 bg-red-500/70 md:ml-auto md:w-16 sm:mt-5" />
+                        <div className="mt-6 sm:mt-8">
+                            <a href="/about" className="inline-block" onClick={(e) => {
+                                e.preventDefault();
+                                onShatterTrigger(e.clientX, e.clientY);
+                            }}>
                                 <motion.button
                                     whileHover={{ scale: 1.04, y: -2 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="px-9 py-4 font-cinematic text-sm tracking-[0.2em] font-semibold border border-red-950/40 bg-[#07000b] text-gray-200 shadow-[0_12px_32px_rgba(0,0,0,0.8)] hover:border-red-500/35 hover:text-white hover:shadow-[0_16px_40px_rgba(239,68,68,0.15)] transition-all duration-300 rounded-sm"
+                                    className="px-5 py-2.5 sm:px-7 sm:py-3 font-cinematic text-xs sm:text-sm tracking-[0.15em] sm:tracking-[0.2em] font-semibold border border-red-500/40 bg-black/60 backdrop-blur-sm text-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:border-red-500 hover:text-white hover:bg-red-950/30 hover:shadow-[0_12px_32px_rgba(239,68,68,0.25)] transition-all duration-300 rounded-sm"
                                 >
                                     ENGINEER REALM
                                 </motion.button>
