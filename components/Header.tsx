@@ -348,7 +348,7 @@ const ModeSwitch: React.FC<{
     );
 };
 
-const Header: React.FC<HeaderProps> = ({ mode, onChangeMode }) => {
+const Header: React.FC<HeaderProps> = ({ mode, onChangeMode, onShatterTrigger }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [logoStageIndex, setLogoStageIndex] = useState(0);
