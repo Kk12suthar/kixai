@@ -45,7 +45,7 @@ const App: React.FC = () => {
   };
 
   const handleShatterComplete = () => {
-    window.location.href = '/about';
+    window.location.href = 'https://aikishor.live/about';
   };
 
   useEffect(() => {

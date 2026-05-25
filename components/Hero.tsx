@@ -239,7 +239,7 @@ const Hero: React.FC<HeroProps> = ({ mode }) => {
                             — Nicole Reed
                         </p>
                         <div className="mt-6 sm:mt-8">
-                            <a href="/about" className="inline-block" onClick={(e) => {
+                            <a href="https://aikishor.live/about" className="inline-block" onClick={(e) => {
                                 e.preventDefault();
                                 onShatterTrigger(e.clientX, e.clientY);
                             }}>
@@ -266,7 +266,7 @@ const Hero: React.FC<HeroProps> = ({ mode }) => {
                         </blockquote>
                         <div className="mt-3 h-px w-10 bg-red-500/70 md:ml-auto md:w-16 sm:mt-5" />
                         <div className="mt-6 sm:mt-8">
-                            <a href="/about" className="inline-block" onClick={(e) => {
+                            <a href="https://aikishor.live/about" className="inline-block" onClick={(e) => {
                                 e.preventDefault();
                                 onShatterTrigger(e.clientX, e.clientY);
                             }}>

@@ -13,7 +13,7 @@ const navItems = [
     { name: 'Side Quest', href: '#sidequests' },
     { name: 'Ask KiX', href: '#chatbot' },
     { name: 'Way of Life', href: '#philosophy' },
-    { name: 'Engineer Realm', href: '/about' },
+    { name: 'Engineer Realm', href: 'https://aikishor.live/about' },
 ];
 
 const logoStages = ['full', 'initials', 'kiks', 'kix'] as const;
@@ -419,7 +419,7 @@ const Header: React.FC<HeaderProps> = ({ mode, onChangeMode }) => {
 
                     <nav className="hidden items-center gap-1 md:flex">
                         {navItems.map((item, index) => {
-                            const isExternal = item.href.startsWith('/');
+                            const isExternal = item.href.startsWith('/') || item.href.startsWith('http');
                             return (
                                 <motion.a
                                     key={item.name}
@@ -501,7 +501,7 @@ const Header: React.FC<HeaderProps> = ({ mode, onChangeMode }) => {
 
                         <nav className="flex flex-col gap-2">
                             {navItems.map((item, index) => {
-                                const isExternal = item.href.startsWith('/');
+                                const isExternal = item.href.startsWith('/') || item.href.startsWith('http');
                                 return (
                                     <motion.a
                                         key={item.name}
