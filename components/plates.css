@@ -1,0 +1,19 @@
+/* ── live plates ── */
+.plate-frame:has(.plate3d) {
+  padding: 0;
+  overflow: hidden;
+}
+.plate3d {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.plate3d.is-shown {
+  opacity: 1;
+}
+.plate3d > canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

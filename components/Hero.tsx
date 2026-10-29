@@ -1,292 +1,242 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
 import type { ThemeMode } from '../types';
+import { copy } from '../content';
+import { reducedMotion } from '../lib/reveal';
+import { originOf } from './Nav';
 
 interface HeroProps {
-    mode: ThemeMode;
-    onShatterTrigger: (x: number, y: number) => void;
+  mode: ThemeMode;
+  ready: boolean;
+  onCross: (origin?: { x: number; y: number }) => void;
 }
 
-const useIsMobile = () => {
-    const [isMobile, setIsMobile] = useState(false);
+/* The full name runs round a ring. It turns once and stops, then K and I from Kishor, K from
+   Kumar and S from Suthar get picked out. Everything else falls away, the four lift off the
+   ring and set as KiKS, then the K and S fuse into the X. Then it rewinds. */
+const RING = 'KISHOR•KUMAR•SUTHAR•'.split('');
+const KEEP = [0, 1, 7, 13]; // K I K S
 
-    useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth < 768);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
+const SPIN = 2.6; // one full turn of the ring
+const READ = 1.6; // the ring sits still long enough to read the whole name
+const PICK_AT = SPIN + READ;
+const HOLD_MARK = 3.4; // seconds on KiX
+const POP = 1.25; // how much a picked letter grows on the ring
 
-    return isMobile;
-};
+const Hero: React.FC<HeroProps> = ({ mode, ready, onCross }) => {
+  const c = copy[mode];
+  const root = useRef<HTMLElement>(null);
+  const [still] = useState(reducedMotion);
 
-const AuraLines: React.FC<{ step: number; isMobile: boolean; mode: ThemeMode }> = ({ step, isMobile, mode }) => {
-    const cornerPaths = useMemo(() => {
-        const fullPaths = [
-            'M0,0 C20,10 30,20 40,40',
-            'M10,0 C20,15 30,25 45,35',
-        ];
+  useLayoutEffect(() => {
+    const el = root.current;
+    if (still || !el) return;
+    const once = gsap.context(() => {
+      gsap.set('.mask.sub > span', { yPercent: 112 });
+      gsap.set(['.mark', '.ring'], { opacity: 0 });
+      gsap.set('[data-in]', { opacity: 0, y: 18 });
+    }, el);
+    if (!ready) return () => once.revert();
 
-        return fullPaths;
-    }, []);
+    let loop: gsap.Context | null = null;
+    let alive = true;
+    let timer = 0;
 
-    const stroke = mode === 'calm'
-        ? step === 4 ? '#475569' : 'rgba(100, 116, 139, 0.4)'
-        : step === 4 ? '#ef4444' : 'rgba(127, 29, 29, 0.55)';
+    const build = (first: boolean) => {
+      loop?.revert();
+      loop = gsap.context((self) => {
+        const q = self.selector!;
+        const title = q('.hero-title')[0] as HTMLElement;
+        const ring = q('.ring')[0] as HTMLElement;
+        const mark = q('.mark')[0] as HTMLElement;
+        const sub = q('.mask.sub > span');
+        const ringLetters = q('.r-l') as HTMLElement[];
+        const kept = KEEP.map((i) => ringLetters[i]);
+        const dropped = ringLetters.filter((_, i) => !KEEP.includes(i));
+        const letters = q('.mark .m-l:not(.m-x)') as HTMLElement[]; // K i K S
+        const pair = letters.slice(2);
+        const x = q('.m-x')[0] as HTMLElement;
+        const xGlyph = q('.m-x b')[0] as HTMLElement;
+        const shock = q('.m-shock')[0] as HTMLElement;
 
-    return (
-        <svg
-            className="absolute inset-0 h-full w-full overflow-visible pointer-events-none"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-        >
-            {!isMobile && (
-                <defs>
-                    <filter id={`glow-${mode}`} x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="1" result="coloredBlur" />
-                        <feMerge>
-                            <feMergeNode in="coloredBlur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
-                </defs>
-            )}
+        // ── the ring: each letter stands on the circle, facing out
+        const R = ring.offsetWidth / 2;
+        const step = 360 / RING.length;
+        const angle = (i: number) => ((i * step + 180) % 360) - 180;
+        gsap.set(ring, { opacity: 1, rotation: 0 });
+        ringLetters.forEach((n, i) => {
+          const a = (i * step * Math.PI) / 180;
+          gsap.set(n, { xPercent: -50, yPercent: -50, x: R * Math.sin(a), y: -R * Math.cos(a), rotation: i * step, '--p': 0 });
+        });
 
-            {[0, 90, 180, 270].map((rotation, i) => (
-                <g key={rotation} transform={`rotate(${rotation} 50 50)`}>
-                    {cornerPaths.map((d, j) => (
-                        <motion.path
-                            key={`${i}-${j}`}
-                            d={d}
-                            fill="none"
-                            stroke={stroke}
-                            strokeWidth={isMobile ? '0.4' : '0.3'}
-                            filter={isMobile ? undefined : `url(#glow-${mode})`}
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            animate={{
-                                pathLength: isMobile ? [0.3, 0.7, 0.3] : [0.2, 0.8, 0.2],
-                                opacity: mode === 'calm' ? [0.15, 0.5, 0.15] : [0.2, 0.55, 0.2],
-                            }}
-                            transition={{
-                                duration: isMobile ? 4 : 3 + (j % 3),
-                                repeat: Infinity,
-                                ease: 'easeInOut',
-                                delay: j * 0.18,
-                            }}
-                        />
-                    ))}
-                </g>
-            ))}
-        </svg>
-    );
-};
+        // ── the mark at full size; it scales down only where a phone is too narrow
+        const room = title.clientWidth * 0.96;
+        const slot = letters.map((n) => n.offsetWidth);
+        const xW = x.offsetWidth;
+        const bW = xGlyph.offsetWidth;
+        const kiks = slot.reduce((s, w) => s + w, 0);
+        const kix = kiks - slot[2] - slot[3] + xW;
+        const kiksScale = Math.min(1, room / kiks) * 0.86;
+        const kixScale = Math.min(1, room / kix);
+        const em = parseFloat(getComputedStyle(mark).fontSize);
+        gsap.set(mark, { scale: kiksScale, opacity: 1 });
+        gsap.set(letters, { width: (i: number) => slot[i], '--p': 1 }); // fixed slots, picked colour
+        gsap.set(x, { width: 0 });
 
-const CalmNatureScene: React.FC<{ isMobile: boolean; step: number }> = ({ isMobile, step }) => {
-    return (
-        <>
-            <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: 'url(/grate.jpeg)',
-                }}
-            />
+        // K and S meet halfway between them, and the X grows out of that point
+        const meet = (slot[2] + slot[3]) / 4;
+        gsap.set(xGlyph, { opacity: 0, x: -(slot[2] * 0.25 + slot[3] * 0.75 + bW / 2) });
+        gsap.set(shock, { opacity: 0, scale: 0.3 });
 
-            {/* Bottom gradient on mobile (quote sits at bottom) / right gradient on desktop */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/30 to-slate-900/10 md:bg-gradient-to-l md:from-slate-900/85 md:via-slate-900/40 md:to-slate-900/10" />
+        // park each mark letter on its twin on the ring, tilted the same way and as big as the picked letter
+        const fsRing = parseFloat(getComputedStyle(ringLetters[0]).fontSize);
+        const s = (fsRing * POP) / (em * kiksScale);
+        const centre = (r: DOMRect) => [r.left + r.width / 2, r.top + r.height / 2];
+        const park = letters.map((n, j) => {
+          const [ax, ay] = centre(n.getBoundingClientRect());
+          const [bx, by] = centre(kept[j].getBoundingClientRect());
+          return { x: (bx - ax) / kiksScale, y: (by - ay) / kiksScale, rotation: angle(KEEP[j]) };
+        });
+        gsap.set(letters, {
+          x: (i: number) => park[i].x,
+          y: (i: number) => park[i].y,
+          rotation: (i: number) => park[i].rotation,
+          scale: s,
+          opacity: 0,
+        });
 
-            <motion.div
-                animate={{
-                    opacity: step === 4 ? 0.55 : 0.3,
-                    scale: step === 4 ? 1.1 : 0.95,
-                }}
-                transition={{ duration: 1.2, ease: 'easeInOut' }}
-                className="absolute left-1/2 top-[18%] h-[340px] w-[340px] -translate-x-1/2 rounded-full bg-white/30 blur-[120px] breathe-glow"
-            />
+        // ── the ring turns once and comes to rest
+        const turn = gsap.fromTo(ring, { rotation: 0 }, { rotation: 360, duration: SPIN, ease: 'power2.inOut' });
 
-            <AuraLines step={step} isMobile={isMobile} mode="calm" />
-        </>
-    );
-};
+        const fold = gsap.timeline({ paused: true });
+        fold
+          // pick K, I, K, S out of the name, one after another
+          .to(kept, { '--p': 1, scale: POP, duration: 0.45, ease: 'back.out(2.2)', stagger: 0.3 }, 0)
+          .to(dropped, { opacity: 0.2, duration: 0.6, ease: 'power2.out' }, 1.0)
+          // the rest of the name falls away
+          .to(dropped, { opacity: 0, scale: 0.6, duration: 0.5, ease: 'power2.in', stagger: 0.012 }, 1.75)
+          // the four lift off the ring and set as KiKS
+          .to(kept, { opacity: 0, duration: 0.2, ease: 'none' }, 1.95)
+          .to(letters, { opacity: 1, duration: 0.2, ease: 'none' }, 1.95)
+          .to(letters, { x: 0, y: 0, rotation: 0, scale: 1, duration: 1.35, ease: 'expo.inOut', stagger: 0.09 }, 1.95)
+          .to(letters.slice(0, 2), { '--p': 0, duration: 0.7, ease: 'power2.out' }, 3.65)
+          // K and S slide into each other...
+          .to(pair[0], { x: meet, scale: 0.8, duration: 0.5, ease: 'power3.in' }, 4.2)
+          .to(pair[1], { x: -meet, scale: 0.8, duration: 0.5, ease: 'power3.in' }, 4.2)
+          .to(pair, { opacity: 0, duration: 0.14, ease: 'none' }, 4.58)
+          // ...and the X comes out of where they met
+          .fromTo(
+            xGlyph,
+            { opacity: 0, scale: 0.2, rotate: -40 },
+            { opacity: 1, scale: 1, rotate: 0, duration: 0.95, ease: 'expo.out', immediateRender: false },
+            4.65
+          )
+          .fromTo(shock, { opacity: 0.7, scale: 0.3 }, { opacity: 0, scale: 2.6, duration: 1, ease: 'expo.out', immediateRender: false }, 4.65)
+          .to(pair, { width: 0, duration: 0.9, ease: 'expo.inOut' }, 4.75)
+          .to(x, { width: xW, duration: 0.9, ease: 'expo.inOut' }, 4.75)
+          .to(xGlyph, { x: 0, duration: 0.9, ease: 'expo.inOut' }, 4.75)
+          .to(mark, { scale: kixScale, duration: 1.1, ease: 'expo.inOut' }, 4.75)
+          .fromTo(sub, { yPercent: 112 }, { yPercent: 0, duration: 1.4, ease: 'expo.out' }, 5.2);
 
-const RageSeaScene: React.FC<{ isMobile: boolean; step: number }> = ({ isMobile, step }) => {
-    return (
-        <>
-            {/* Wallpaper image — fills the whole hero. Face stays centered on
-                every screen so the subject is always fully visible; the quote
-                sits in the gradient area (bottom on mobile, right on desktop). */}
-            <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: 'url(/Angry.jpg)',
-                }}
-            />
+        // forwards at reading speed, back as a quick rewind, then the name rests on the ring again
+        const end = fold.duration();
+        const cycle = gsap.timeline({ repeat: -1, repeatDelay: 1.2, paused: true });
+        cycle
+          .add(turn, 0)
+          .add(fold.tweenFromTo(0, end), PICK_AT)
+          .add(fold.tweenFromTo(end, 0, { duration: end * 0.55, ease: 'power1.inOut' }), `+=${HOLD_MARK}`);
 
-            {/* Mobile: dark gradient at bottom for the quote
-                Desktop: dark gradient on right side for the quote */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/15 md:bg-gradient-to-l md:from-black/90 md:via-black/45 md:to-black/10" />
+        // every arrival, including a switch of sides, starts on the full name
+        if (first) {
+          gsap.fromTo(ring, { scale: 0.88 }, { scale: 1, duration: 1.4, ease: 'expo.out' });
+          gsap.from(ringLetters, { opacity: 0, duration: 0.5, ease: 'power2.out', stagger: 0.035 });
+        }
+        cycle.play(0);
 
-            {/* Soft red atmospheric pulse */}
-            <motion.div
-                animate={{
-                    scale: step === 4 ? (isMobile ? 1.3 : 1.8) : 0.8,
-                    opacity: step === 4 ? (isMobile ? 0.18 : 0.25) : 0.06,
-                }}
-                transition={{ duration: isMobile ? 0.5 : 0.8, ease: 'easeOut' }}
-                className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-nolan-aura mix-blend-screen ${
-                    isMobile ? 'h-[300px] w-[300px] blur-[80px]' : 'h-[600px] w-[600px] blur-[150px]'
-                }`}
-            />
-            <motion.div
-                animate={{ opacity: [0.14, 0.28, 0.14], x: [-18, 12, -18] }}
-                transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute left-[12%] top-[14%] h-[220px] w-[220px] rounded-full bg-red-500/12 blur-[120px]"
-            />
-            <motion.div
-                animate={{ opacity: [0.10, 0.22, 0.10], x: [18, -16, 18] }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute right-[12%] top-[22%] h-[280px] w-[280px] rounded-full bg-orange-500/8 blur-[160px]"
-            />
+        // no point turning letters nobody can see
+        gsap.timeline({
+          scrollTrigger: {
+            trigger: el,
+            start: 'top top',
+            end: 'bottom top',
+            onLeave: () => cycle.pause(),
+            onEnterBack: () => cycle.resume(),
+          },
+        });
+      }, el);
+    };
 
-            {!isMobile && <div className="absolute inset-0 bg-film-grain opacity-15 mix-blend-overlay" />}
-            <AuraLines step={step} isMobile={isMobile} mode="rage" />
+    document.fonts.ready.then(() => {
+      if (!alive) return;
+      once.add(() => {
+        gsap.to('[data-in]', { opacity: 1, y: 0, duration: 1.3, ease: 'expo.out', stagger: 0.07, delay: 0.6 });
+        gsap.to('.hero-title', {
+          yPercent: -18,
+          opacity: 0.15,
+          ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top top', end: 'bottom top', scrub: true },
+        });
+      });
+      build(true);
+    });
 
-            {/* Bottom fade so the status text below has a clean canvas */}
-            <div className="absolute bottom-0 left-0 right-0 h-[28%] bg-gradient-to-t from-black via-black/80 to-transparent" />
-            <div className="absolute bottom-[18%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-            <div className="wave-line absolute bottom-[11%] left-[-14%] h-[20%] w-[128%] rounded-[100%] border-t border-nolan-aura/35 opacity-70" />
-            <div className="wave-line absolute bottom-[8%] left-[-10%] h-[18%] w-[120%] rounded-[100%] border-t border-red-500/20 opacity-60" />
-        </>
-    );
-};
+    // positions are measured in pixels, so a new viewport needs a new build
+    let lastW = window.innerWidth;
+    const onResize = () => {
+      if (window.innerWidth === lastW) return; // mobile toolbars only change the height
+      lastW = window.innerWidth;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => build(false), 250);
+    };
+    window.addEventListener('resize', onResize);
 
-const Hero: React.FC<HeroProps> = ({ mode }) => {
-    const isMobile = useIsMobile();
-    const isCalm = mode === 'calm';
-    const [step, setStep] = useState(0);
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+      window.removeEventListener('resize', onResize);
+      loop?.revert();
+      once.revert();
+    };
+  }, [ready, still]);
 
-    useEffect(() => {
-        let isMounted = true;
+  return (
+    <section className="hero" id="top" ref={root}>
+      <h1 className="hero-title" aria-label={`KiX, Kishor Kumar Suthar. ${c.titleBottom}`}>
+        <span className="mask big" aria-hidden="true">
+          <span className={`morph ${still ? 'is-still' : ''}`}>
+            <span className="ring">
+              {RING.map((ch, i) => (
+                <span key={i} className={`r-l ${ch === '•' ? 'r-dot' : ''}`}>
+                  {ch}
+                </span>
+              ))}
+            </span>
+            <span className="mark">
+              <span className="m-l">K</span>
+              <span className="m-l">i</span>
+              <span className="m-l m-pair">K</span>
+              <span className="m-l m-pair">S</span>
+              <span className="m-l m-x">
+                <b>
+                  X
+                  <i className="m-shock" />
+                </b>
+              </span>
+            </span>
+          </span>
+        </span>
+        <span className="mask sub" aria-hidden="true">
+          <span>{c.titleBottom}</span>
+        </span>
+      </h1>
 
-        const runSequence = async () => {
-            while (isMounted) {
-                setStep(0);
-                await new Promise((resolve) => setTimeout(resolve, 5000));
-                if (!isMounted) break;
-
-                setStep(1);
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-                if (!isMounted) break;
-
-                setStep(2);
-                await new Promise((resolve) => setTimeout(resolve, 2500));
-                if (!isMounted) break;
-
-                setStep(3);
-                await new Promise((resolve) => setTimeout(resolve, 1500));
-                if (!isMounted) break;
-
-                setStep(4);
-                await new Promise((resolve) => setTimeout(resolve, 6000));
-            }
-        };
-
-        runSequence();
-        return () => {
-            isMounted = false;
-        };
-    }, []);
-
-    return (
-        <section
-            className={`relative flex min-h-screen flex-col items-center justify-center overflow-hidden select-none ${
-                isCalm ? 'bg-transparent text-slate-900' : 'bg-transparent text-white'
-            }`}
-        >
-            <div className="absolute inset-0 z-0 pointer-events-none">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={mode}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute inset-0"
-                    >
-                        {isCalm ? <CalmNatureScene isMobile={isMobile} step={step} /> : <RageSeaScene isMobile={isMobile} step={step} />}
-                    </motion.div>
-                </AnimatePresence>
-            </div>
-
-            {/* Foreground content — fills the hero, quote anchors to bottom on
-                mobile (below the centered face) and to the side on desktop. */}
-            <div className="relative z-20 flex min-h-screen w-full flex-col px-5 pb-16 pt-24 sm:px-8 md:px-12 md:pb-20 md:pt-28">
-                {/* Spacer to keep the image visible above the quote on mobile */}
-                <div className="flex-1" />
-
-                {isCalm ? (
-                    /* ─── CALM MODE: Quote bottom on mobile, left on desktop ─── */
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-                        className="w-full text-left md:max-w-[55%] lg:max-w-[48%]"
-                    >
-                        <blockquote className="font-cinematic text-base font-bold leading-[1.3] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)] sm:text-xl md:text-2xl lg:text-3.5xl">
-                            "Sometimes the bad things that happen in our lives put us directly on the path to the best things that will ever happen to us."
-                        </blockquote>
-                        <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.4em] text-white/85 sm:mt-5 sm:text-[11px]">
-                            — Nicole Reed
-                        </p>
-                        <div className="mt-6 sm:mt-8">
-                            <a href="https://aikishor.live/about" className="inline-block">
-                                <motion.button
-                                    whileHover={{ scale: 1.04, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="px-5 py-2.5 sm:px-7 sm:py-3 font-cinematic text-xs sm:text-sm tracking-[0.15em] sm:tracking-[0.2em] font-semibold border border-white/90 bg-white text-slate-900 shadow-[0_8px_24px_rgba(255,255,255,0.1)] hover:bg-slate-100 transition-all duration-300 rounded-sm"
-                                >
-                                    ENGINEER REALM
-                                </motion.button>
-                            </a>
-                        </div>
-                    </motion.div>
-                ) : (
-                    /* ─── RAGE MODE: Quote bottom on mobile, right on desktop ─── */
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-                        className="w-full text-left md:ml-auto md:max-w-[50%] md:text-right lg:max-w-[44%]"
-                    >
-                        <blockquote className="font-cinematic text-base font-bold italic leading-[1.25] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] sm:text-xl md:text-2xl lg:text-3.5xl">
-                            "If you gaze into the abyss for long, the abyss will gaze back to you."
-                        </blockquote>
-                        <div className="mt-3 h-px w-10 bg-red-500/70 md:ml-auto md:w-16 sm:mt-5" />
-                        <div className="mt-6 sm:mt-8">
-                            <a href="https://aikishor.live/about" className="inline-block">
-                                <motion.button
-                                    whileHover={{ scale: 1.04, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="px-5 py-2.5 sm:px-7 sm:py-3 font-cinematic text-xs sm:text-sm tracking-[0.15em] sm:tracking-[0.2em] font-semibold border border-red-500/40 bg-black/60 backdrop-blur-sm text-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:border-red-500 hover:text-white hover:bg-red-950/30 hover:shadow-[0_12px_32px_rgba(239,68,68,0.25)] transition-all duration-300 rounded-sm"
-                                >
-                                    ENGINEER REALM
-                                </motion.button>
-                            </a>
-                        </div>
-                    </motion.div>
-                )}
-
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: step === 4 ? 1 : 0 }}
-                    transition={{ duration: 1 }}
-                    className="mt-8 flex justify-center md:mt-10"
-                >
-                    <ChevronDown className={`h-6 w-6 animate-bounce ${isCalm ? 'text-white/80' : 'text-nolan-aura'}`} />
-                </motion.div>
-            </div>
-        </section>
-    );
+      <div className="hero-foot">
+        <button type="button" className="hero-cross" data-in onClick={(e) => onCross(originOf(e))}>
+          <span>{c.cross} →</span>
+        </button>
+      </div>
+    </section>
+  );
 };
 
 export default Hero;

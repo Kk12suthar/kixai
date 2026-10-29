@@ -1,162 +1,176 @@
-import React, { useEffect, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import SideQuests from './components/SideQuests';
-import Screenwriter from './components/Screenwriter';
-import Philosophy from './components/Philosophy';
-import KrishnaAIPage from './components/KrishnaAIPage';
-import Footer from './components/Footer';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
+import { World, supportsWebGL } from './lib/world';
+import { ENGINEER_REALM_URL } from './content';
 import type { ThemeMode } from './types';
-import { MirrorShatter } from './components/MirrorShatter';
+import Intro from './components/Intro';
+import Nav from './components/Nav';
+import Hero from './components/Hero';
+import Cast from './components/Cast';
+import Wall from './components/Wall';
+import Kurukshetra from './components/Kurukshetra';
+import Realm from './components/Realm';
+import Credits from './components/Credits';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const THEME_STORAGE_KEY = 'kixai-emotional-mode';
 
 const getInitialMode = (): ThemeMode => {
-  if (typeof window === 'undefined') {
+  try {
+    const q = new URLSearchParams(window.location.search).get('mode');
+    if (q === 'rage' || q === 'calm') return q;
+    return window.localStorage.getItem(THEME_STORAGE_KEY) === 'calm' ? 'calm' : 'rage';
+  } catch {
     return 'rage';
   }
-
-  const storedMode = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return storedMode === 'calm' ? 'calm' : 'rage';
 };
 
+// another origin (local dev) cannot read our localStorage, so the side travels in the URL
+const withMode = (url: string, mode: ThemeMode) =>
+  /^https?:/.test(url) && new URL(url).origin !== window.location.origin
+    ? `${url}${url.includes('?') ? '&' : '?'}mode=${mode}`
+    : url;
+
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 const App: React.FC = () => {
-  // Custom cursor logic for desktop
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [showKrishnaAI, setShowKrishnaAI] = useState(false);
   const [mode, setMode] = useState<ThemeMode>(getInitialMode);
-  const isCalm = mode === 'calm';
+  const [ready, setReady] = useState(false);
+  const worldHost = useRef<HTMLDivElement>(null);
+  const world = useRef<World | null>(null);
+  const lenis = useRef<Lenis | null>(null);
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
 
-  const [shatterState, setShatterState] = useState({
-    isShattering: false,
-    x: 0,
-    y: 0,
-  });
+  // the URL carried the side in; it has done its job
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('mode')) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+    }
+  }, []);
 
-  const handleShatterTrigger = (clientX: number, clientY: number) => {
-    console.log("handleShatterTrigger called with:", clientX, clientY);
-    if (shatterState.isShattering) {
-      console.log("Already shattering, ignoring trigger.");
+  // the world
+  useEffect(() => {
+    if (!worldHost.current || !supportsWebGL()) {
+      document.documentElement.classList.add('no-webgl');
       return;
     }
-    const x = (typeof clientX === 'number' && !isNaN(clientX)) ? clientX : window.innerWidth / 2;
-    const y = (typeof clientY === 'number' && !isNaN(clientY)) ? clientY : window.innerHeight / 2;
-    console.log("Setting shatter state to coordinates:", x, y);
-    setShatterState({
-      isShattering: true,
-      x,
-      y,
-    });
-  };
-
-  const handleShatterComplete = () => {
-    console.log("handleShatterComplete called! Redirecting to https://aikishor.live/about");
-    window.location.href = 'https://aikishor.live/about';
-  };
-
-  useEffect(() => {
-    const updateCursor = (e: MouseEvent) => {
-      setCursorPos({ x: e.clientX, y: e.clientY });
-    };
-
-    const handleMouseOver = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).tagName === 'BUTTON' || (e.target as HTMLElement).tagName === 'A') {
-        setIsHovering(true);
-      } else {
-        setIsHovering(false);
-      }
-    };
-
-    window.addEventListener('mousemove', updateCursor);
-    window.addEventListener('mouseover', handleMouseOver);
-
+    const w = new World(worldHost.current, getInitialMode());
+    world.current = w;
+    if (import.meta.env.DEV) Object.assign(window, { __world: w, __gsap: gsap, __st: ScrollTrigger });
     return () => {
-      window.removeEventListener('mousemove', updateCursor);
-      window.removeEventListener('mouseover', handleMouseOver);
+      w.dispose();
+      world.current = null;
     };
   }, []);
 
-  // Prevent body scroll when Krishna AI is open
+  // smooth scroll, driven by the gsap ticker so ScrollTrigger and Lenis agree
   useEffect(() => {
-    if (showKrishnaAI) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
+    // the film always starts at the opening scene
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+    const reduce = prefersReducedMotion();
+    const l = new Lenis({ lerp: reduce ? 1 : 0.085, smoothWheel: !reduce });
+    lenis.current = l;
+    l.on('scroll', (inst: Lenis) => {
+      ScrollTrigger.update();
+      world.current?.setScroll(inst.progress);
+    });
+    const tick = (t: number) => l.raf(t * 1000);
+    gsap.ticker.add(tick);
+    gsap.ticker.lagSmoothing(0);
     return () => {
-      document.body.style.overflow = 'auto';
+      gsap.ticker.remove(tick);
+      l.destroy();
+      lenis.current = null;
     };
-  }, [showKrishnaAI]);
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = mode;
-    window.localStorage.setItem(THEME_STORAGE_KEY, mode);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', mode === 'calm' ? '#f4f4f1' : '#0b0a09');
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, mode);
+    } catch {
+      /* private mode */
+    }
+    world.current?.setMode(mode);
+    const id = requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => cancelAnimationFrame(id);
   }, [mode]);
+
+  const changeMode = useCallback(
+    (next: ThemeMode, origin?: { x: number; y: number }) => {
+      if (next === mode) return;
+      const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+      if (!doc.startViewTransition || prefersReducedMotion()) {
+        setMode(next);
+        return;
+      }
+      const x = origin?.x ?? window.innerWidth / 2;
+      const y = origin?.y ?? window.innerHeight / 2;
+      const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+      const root = document.documentElement.style;
+      root.setProperty('--vt-x', `${x}px`);
+      root.setProperty('--vt-y', `${y}px`);
+      root.setProperty('--vt-r', `${r}px`);
+      doc.startViewTransition(() => flushSync(() => setMode(next)));
+    },
+    [mode]
+  );
+
+  const toggleMode = useCallback(
+    (origin?: { x: number; y: number }) => changeMode(mode === 'rage' ? 'calm' : 'rage', origin),
+    [mode, changeMode]
+  );
+
+  const goTo = useCallback((target: string) => {
+    lenis.current?.scrollTo(target, { offset: 0, duration: 1.6 });
+  }, []);
+
+  const enterRealm = useCallback(async () => {
+    const url = withMode(ENGINEER_REALM_URL, modeRef.current);
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = url;
+    document.head.appendChild(link);
+    document.documentElement.classList.add('is-warping');
+    lenis.current?.stop();
+    await Promise.all([world.current?.warp(), new Promise((r) => setTimeout(r, 1100))]);
+    window.location.href = url;
+  }, []);
+
+  // coming back with the browser's back button restores a frozen page
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => {
+      if (e.persisted) window.location.reload();
+    };
+    window.addEventListener('pageshow', onShow);
+    return () => window.removeEventListener('pageshow', onShow);
+  }, []);
 
   return (
     <>
-      <main
-        className={`theme-shell theme-shell--${mode} min-h-screen w-full overflow-x-hidden transition-all duration-[1200ms] ease-out ${
-          isCalm ? 'selection:bg-white selection:text-slate-900' : 'selection:bg-nolan-gold selection:text-black'
-        } ${
-          shatterState.isShattering
-            ? 'scale-[0.96] filter blur-[8px] brightness-[0.2] pointer-events-none'
-            : ''
-        }`}
-      >
-        {/* Cinematic Custom Cursor (Hidden on Touch) */}
-        <div
-          className={`fixed top-0 left-0 z-50 hidden h-8 w-8 rounded-full pointer-events-none md:block transition-transform duration-100 ease-out ${
-            isCalm
-              ? 'border border-white/80 shadow-[0_0_24px_rgba(255,255,255,0.65)]'
-              : 'mix-blend-difference border border-white/50'
-          }`}
-          style={{
-            transform: `translate(${cursorPos.x - 16}px, ${cursorPos.y - 16}px) scale(${isHovering ? 2.5 : 1})`,
-            backgroundColor: isHovering
-              ? isCalm
-                ? 'rgba(255, 255, 255, 0.28)'
-                : 'rgba(255, 255, 255, 0.1)'
-              : 'transparent'
-          }}
-        >
-          <div
-            className={`absolute top-1/2 left-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full ${
-              isCalm ? 'bg-slate-500' : 'bg-white'
-            }`}
-          ></div>
-        </div>
+      <div className="world" ref={worldHost} aria-hidden="true" />
+      <div className="vignette" aria-hidden="true" />
 
-        <Header mode={mode} onChangeMode={setMode} onShatterTrigger={handleShatterTrigger} />
-        <Hero mode={mode} onShatterTrigger={handleShatterTrigger} />
-        <section id="sidequests">
-          <SideQuests mode={mode} />
-        </section>
-        <section id="chatbot">
-          <Screenwriter mode={mode} />
-        </section>
-        <section id="philosophy">
-          <Philosophy mode={mode} onOpenKrishna={() => setShowKrishnaAI(true)} />
-        </section>
-        <Footer mode={mode} />
+      <Nav mode={mode} onToggle={toggleMode} onNavigate={goTo} onRealm={enterRealm} />
+
+      <main className="page">
+        <Hero key={`hero-${mode}`} mode={mode} ready={ready} onCross={toggleMode} />
+        <Cast key={`cast-${mode}`} mode={mode} />
+        <Wall key={`wall-${mode}`} mode={mode} />
+        <Kurukshetra key={`gita-${mode}`} mode={mode} />
+        <Realm key={`realm-${mode}`} mode={mode} onEnter={enterRealm} />
+        <Credits onTop={() => goTo('#top')} />
       </main>
 
-      {/* Krishna AI Full Page Overlay */}
-      <AnimatePresence>
-        {showKrishnaAI && (
-          <KrishnaAIPage onClose={() => setShowKrishnaAI(false)} />
-        )}
-      </AnimatePresence>
-
-      <MirrorShatter
-        isShattering={shatterState.isShattering}
-        impactX={shatterState.x}
-        impactY={shatterState.y}
-        mode={mode}
-        onComplete={handleShatterComplete}
-      />
+      <div className="warp-veil" aria-hidden="true" />
+      <Intro onDone={() => setReady(true)} />
     </>
   );
 };

@@ -1,18 +1,21 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  functions = "netlify/functions"
 
+# Proxy /about and /about/* on aikishor.live to the Vercel-hosted portfolio.
+# status = 200 + force = true performs a reverse-proxy rewrite (URL stays as
+# aikishor.live/about while content is fetched from Vercel). The portfolio is
+# built with Vite base "/about/" so its asset paths line up with this rewrite.
 [[redirects]]
   from = "/about"
-  to = "https://aikishor.live/about"
-  status = 302
+  to = "https://portfolio1-jade-ten.vercel.app/about"
+  status = 200
   force = true
 
 [[redirects]]
   from = "/about/*"
-  to = "https://aikishor.live/about/:splat"
-  status = 302
+  to = "https://portfolio1-jade-ten.vercel.app/about/:splat"
+  status = 200
   force = true
 
 [[redirects]]
